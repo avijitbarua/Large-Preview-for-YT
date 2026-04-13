@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YT Card Zoomer",
-  "version": "1.0",
-  "description": "Zooms the whole video card up to 180% on hover.",
+  "name": "YouTube Home Row Expander",
+  "version": "1.1.0",
+  "description": "Expands the hovered YouTube home video card to full row width while keeping other cards visible in the next row.",
   "permissions": ["storage"],
   "content_scripts": [
     {
