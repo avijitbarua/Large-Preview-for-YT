@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "YT Card Zoomer",
+  "version": "1.0",
+  "description": "Zooms the whole video card up to 180% on hover.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["style.css"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

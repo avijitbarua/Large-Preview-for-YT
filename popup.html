@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Preview Settings</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; width: 220px; text-align: center; background-color: #f9f9f9; color: #333; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #cc0000; } /* YouTube Red */
+        input:checked + .slider:before { transform: translateX(24px); }
+        h4 { margin-bottom: 15px; font-size: 16px; margin-top: 0; }
+        p#statusText { margin-top: 8px; font-size: 14px; font-weight: bold; transition: color 0.3s ease; }
+    </style>
+</head>
+<body>
+    <h4>YouTube Preview</h4>
+    <label class="switch">
+        <input type="checkbox" id="extensionToggle">
+        <span class="slider"></span>
+    </label>
+    <p id="statusText">Enabled</p>
+    <script src="popup.js"></script>
+</body>
+</html>
