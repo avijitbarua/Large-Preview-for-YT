@@ -48,43 +48,11 @@
 
     // পেজ লোড হওয়ার সময় একবার রান করবে
     toggleZoomState();
-    
-    // ইউটিউব যেহেতু SPA (Single Page Application), তাই নতুন পেজ লোড হলে আবার রি-ক্যালকুলেট করতে হবে
-    window.addEventListener('yt-navigate-finish', toggleZoomState);
 
     // পপআপ থেকে সুইচ অন/অফ করলে রান করবে
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'local' && changes.isEnabled !== undefined) {
+        if (areaName === 'local' && changes.isEnabled) {
             toggleZoomState();
         }
     });
-
-    // ============================================
-    // ফোর্স আনমিউট (Force Audio) লজিক
-    // ============================================
-    setInterval(() => {
-        chrome.storage.local.get(['isEnabled', 'forceAudio'], (result) => {
-            // যদি মেইন এক্সটেনশন এবং ফোর্স অডিও দুইটাই অন থাকে
-            if (result.isEnabled && result.forceAudio) {
-                
-                // ১. ইউটিউবের কাস্টম আনমিউট বাটনে ক্লিক করার চেষ্টা (যাতে ইউটিউব নিজে থেকেই আনমিউট হয়ে যায়)
-                const muteButtons = document.querySelectorAll('.ytp-mute-button');
-                muteButtons.forEach(btn => {
-                    const title = btn.getAttribute('data-title-no-tooltip') || btn.getAttribute('title') || '';
-                    if (title.toLowerCase().includes('unmute')) {
-                        btn.click();
-                    }
-                });
-
-                // ২. যদি বাটন না থাকে, তবে ডিরেক্ট HTML5 ভিডিও এলিমেন্টকে ফোর্স আনমিউট করা
-                const videos = document.querySelectorAll('video');
-                videos.forEach(video => {
-                    if (video.muted) {
-                        video.muted = false;
-                        video.volume = 1.0;
-                    }
-                });
-            }
-        });
-    }, 300); // প্রতি ৩০০ মিলি-সেকেন্ডে চেক করবে ভিডিও মিউট করা হলো কি না
 })();
