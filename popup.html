@@ -3,40 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Row Expander Settings</title>
+    <title>YouTube Large Preview</title>
+    <!-- Modern Google Font for Premium Feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; width: 240px; text-align: center; background-color: #f9f9f9; color: #333; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #cc0000; } /* YouTube Red */
-        input:checked + .slider:before { transform: translateX(24px); }
-        h4 { margin-bottom: 15px; font-size: 16px; margin-top: 0; }
-        p#statusText { margin-top: 8px; font-size: 14px; font-weight: bold; transition: color 0.3s ease; }
-        .setting { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; gap: 12px; }
-        .label { font-size: 13px; text-align: left; line-height: 1.3; }
-        .hint { margin-top: 8px; font-size: 11px; color: #666; text-align: left; }
+        :root {
+            --primary: #FF0000;
+            --primary-hover: #cc0000;
+            --surface: #ffffff;
+            --background: #f2f2f2;
+            --text-main: #0f0f0f;
+            --text-secondary: #606060;
+            --border: #e5e5e5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 320px;
+            background-color: var(--background);
+            color: var(--text-main);
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        /* Header styling */
+        .header {
+            background-color: var(--surface);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header svg {
+            width: 28px;
+            height: 28px;
+            margin-right: 10px;
+            fill: var(--primary);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header h1 span {
+            color: var(--primary);
+        }
+
+        /* Content area */
+        .content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* Setting Card */
+        .setting-card {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+        }
+
+        .setting-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            border-color: #dcdcdc;
+        }
+
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-width: 200px;
+        }
+
+        .setting-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .setting-desc {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Premium iOS-style Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #d1d1d1;
+            transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border-radius: 24px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Footer Section */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer p { 
+            margin: 0; 
+            font-weight: 600;
+        }
+
+        .footer a {
+            color: #0366d6;
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--primary);
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        .footer a:hover {
+            color: var(--primary);
+        }
+        
+        .footer a:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        /* Hidden status text so popup.js doesn't break */
+        #statusText {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h4>Home Row Expander</h4>
-    <div class="setting">
-        <div class="label">Enable Extension</div>
-        <label class="switch">
-            <input type="checkbox" id="extensionToggle">
-            <span class="slider"></span>
-        </label>
+    <div class="header">
+        <img src="icon.png" alt="Icon" style="width: 30px; height: 30px; margin-right: 12px; border-radius: 6px; object-fit: contain;">
+        <h1>Large Preview <span>for YT</span></h1>
     </div>
-    <div class="setting">
-        <div class="label">Force Audio (Experimental)</div>
-        <label class="switch">
-            <input type="checkbox" id="forceAudioToggle">
-            <span class="slider"></span>
-        </label>
+
+    <div class="content">
+        <!-- Main Toggle -->
+        <div class="setting-card">
+            <div class="setting-info">
+                <div class="setting-title">Enable Extension</div>
+                <div class="setting-desc">Activate cinematic large previews layout.</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="extensionToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Force Audio Toggle -->
+        <div class="setting-card">
+            <div class="setting-info">
+                <div class="setting-title">Force Audio Auto-Play</div>
+                <div class="setting-desc">Automatically unmute preview videos on hover.</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="forceAudioToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
     </div>
+
+    <div class="footer">
+        <p>Developed with ❤️ by <a href="https://github.com/avijitbarua/" target="_blank" rel="noopener noreferrer">Avijit Barua</a></p>
+    </div>
+    
     <p id="statusText">Enabled</p>
-    <div class="hint">Some browsers/YouTube policies may still block unmuted autoplay.</div>
+
     <script src="popup.js"></script>
 </body>
 </html>

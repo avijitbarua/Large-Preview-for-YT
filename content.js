@@ -60,31 +60,87 @@
     });
 
     // ============================================
-    // ফোর্স আনমিউট (Force Audio) লজিক
+    // অ্যাডভান্সড ফোর্স আনমিউট (Force Audio) লজিক
     // ============================================
-    setInterval(() => {
-        chrome.storage.local.get(['isEnabled', 'forceAudio'], (result) => {
-            // যদি মেইন এক্সটেনশন এবং ফোর্স অডিও দুইটাই অন থাকে
-            if (result.isEnabled && result.forceAudio) {
-                
-                // ১. ইউটিউবের কাস্টম আনমিউট বাটনে ক্লিক করার চেষ্টা (যাতে ইউটিউব নিজে থেকেই আনমিউট হয়ে যায়)
-                const muteButtons = document.querySelectorAll('.ytp-mute-button');
-                muteButtons.forEach(btn => {
-                    const title = btn.getAttribute('data-title-no-tooltip') || btn.getAttribute('title') || '';
-                    if (title.toLowerCase().includes('unmute')) {
-                        btn.click();
-                    }
-                });
+    let forceAudioEnabled = false;
 
-                // ২. যদি বাটন না থাকে, তবে ডিরেক্ট HTML5 ভিডিও এলিমেন্টকে ফোর্স আনমিউট করা
-                const videos = document.querySelectorAll('video');
-                videos.forEach(video => {
-                    if (video.muted) {
-                        video.muted = false;
-                        video.volume = 1.0;
-                    }
-                });
+    // লোকাল স্টোরেজ থেকে ইনিশিয়াল ভ্যালু পড়া
+    chrome.storage.local.get(['isEnabled', 'forceAudio'], (result) => {
+        forceAudioEnabled = result.isEnabled && result.forceAudio;
+    });
+
+    // ইউজারের সেটিং চেঞ্জ ট্র্যাক করা
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'local') {
+            chrome.storage.local.get(['isEnabled', 'forceAudio'], (result) => {
+                forceAudioEnabled = result.isEnabled && result.forceAudio;
+                if (forceAudioEnabled) enforceAudio();
+            });
+        }
+    });
+
+    let clickCooldowns = new WeakMap();
+
+    // ডিরেক্ট HTML5 ভিডিও মিউটেশন এবং ইউটিউবের অরিজিনাল বাটন স্মার্ট-ক্লিক
+    function enforceAudio() {
+        if (!forceAudioEnabled) return;
+        
+        // ১. ভিডিও লেভেলে ফোর্সভালি আনমিউট করা
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+            if (video.muted) {
+                video.muted = false;
+                video.volume = 1.0;
             }
         });
-    }, 300); // প্রতি ৩০০ মিলি-সেকেন্ডে চেক করবে ভিডিও মিউট করা হলো কি না
+
+        // ২. ইউটিউবের নিজস্ব আনমিউট বাটনে ক্লিক করা (স্মার্ট কুলডাউন সহ)
+        const muteButtons = document.querySelectorAll('.ytp-mute-button');
+        const now = Date.now();
+
+        muteButtons.forEach(btn => {
+            const title = btn.getAttribute('data-title-no-tooltip') || btn.getAttribute('title') || '';
+            if (title.toLowerCase().includes('unmute')) {
+                const lastClick = clickCooldowns.get(btn) || 0;
+                // ১ সেকেন্ডের কুলডাউন (১০০০ মিলিসেকেন্ড) - যাতে লুপে আটকে না যায়!
+                if (now - lastClick > 1000) {
+                    clickCooldowns.set(btn, now);
+                    btn.click();
+                }
+            }
+        });
+    }
+
+    // ১. ভিডিও যখনই প্লে হওয়া শুরু করবে তখনই আনমিউট করে দেওয়া
+    document.addEventListener('play', (e) => {
+        if (forceAudioEnabled && e.target.tagName && e.target.tagName.toLowerCase() === 'video') {
+            e.target.muted = false;
+            e.target.volume = 1.0;
+        }
+    }, true); 
+
+    // ২. ইউটিউব যদি জাভাস্ক্রিপ্ট দিয়ে মিউট করতে চায়, তবে তা আটকে দেওয়া
+    document.addEventListener('volumechange', (e) => {
+        if (forceAudioEnabled && e.target.tagName && e.target.tagName.toLowerCase() === 'video') {
+            if (e.target.muted || e.target.volume === 0) {
+                e.target.muted = false;
+                e.target.volume = 1.0;
+            }
+        }
+    }, true);
+
+    // ৩. ব্যাকআপ ইন্টারভ্যাল (ফেইলসেইফ)
+    const audioCheckInterval = setInterval(() => {
+        try {
+            if (!chrome?.runtime?.id) {
+                clearInterval(audioCheckInterval);
+                return;
+            }
+            if (forceAudioEnabled) {
+                enforceAudio();
+            }
+        } catch (error) {
+            clearInterval(audioCheckInterval);
+        }
+    }, 200); 
 })();
