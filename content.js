@@ -1,4 +1,78 @@
 (function () {
+    const DEFAULT_PREVIEW_SPEED = 1;
+    const DEFAULT_QUALITY = 'auto';
+
+    function isPreviewVideo(video) {
+        return !!video && !video.closest('#movie_player, .html5-video-player');
+    }
+
+    function formatSpeedLabel(speed) {
+        return `${Number(speed).toFixed(1)}x`;
+    }
+
+    function applyPreviewSpeedToVideo(video, speed) {
+        if (!video || !isPreviewVideo(video)) return;
+        const normalizedSpeed = Number(speed) || DEFAULT_PREVIEW_SPEED;
+
+        if (video.playbackRate !== normalizedSpeed) {
+            video.playbackRate = normalizedSpeed;
+        }
+    }
+
+    function applyPreviewSpeed() {
+        chrome.storage.local.get(['previewSpeed'], (result) => {
+            const speed = result.previewSpeed ?? DEFAULT_PREVIEW_SPEED;
+            document.querySelectorAll('video').forEach(video => {
+                applyPreviewSpeedToVideo(video, speed);
+            });
+        });
+    }
+
+    function applyQualityPreference(attempt = 0) {
+        chrome.storage.local.get(['preferredQuality'], (result) => {
+            const preferredQuality = result.preferredQuality ?? DEFAULT_QUALITY;
+
+            if (preferredQuality === 'auto') {
+                return;
+            }
+
+            const player = document.getElementById('movie_player');
+            const canSetQuality = player && typeof player.setPlaybackQuality === 'function';
+
+            if (!canSetQuality) {
+                if (attempt < 10) {
+                    setTimeout(() => applyQualityPreference(attempt + 1), 500);
+                }
+                return;
+            }
+
+            try {
+                const availableLevels = typeof player.getAvailableQualityLevels === 'function'
+                    ? player.getAvailableQualityLevels()
+                    : [];
+
+                const targetQuality = availableLevels.includes(preferredQuality)
+                    ? preferredQuality
+                    : availableLevels[0] || preferredQuality;
+
+                player.setPlaybackQuality(targetQuality);
+
+                if (typeof player.setPlaybackQualityRange === 'function') {
+                    player.setPlaybackQualityRange(targetQuality);
+                }
+            } catch (error) {
+                if (attempt < 10) {
+                    setTimeout(() => applyQualityPreference(attempt + 1), 500);
+                }
+            }
+        });
+    }
+
+    function syncMediaPreferences() {
+        applyPreviewSpeed();
+        applyQualityPreference();
+    }
+
     // স্ক্রিনের সবচেয়ে কাছে থাকা ভিডিও খুঁজে বের করার ফাংশন
     function getMostVisibleVideo() {
         const videoCards = document.querySelectorAll('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer');
@@ -48,14 +122,36 @@
 
     // পেজ লোড হওয়ার সময় একবার রান করবে
     toggleZoomState();
+    syncMediaPreferences();
     
     // ইউটিউব যেহেতু SPA (Single Page Application), তাই নতুন পেজ লোড হলে আবার রি-ক্যালকুলেট করতে হবে
-    window.addEventListener('yt-navigate-finish', toggleZoomState);
+    window.addEventListener('yt-navigate-finish', () => {
+        toggleZoomState();
+        syncMediaPreferences();
+    });
+
+    document.addEventListener('play', (e) => {
+        if (e.target.tagName && e.target.tagName.toLowerCase() === 'video') {
+            chrome.storage.local.get(['previewSpeed'], (result) => {
+                applyPreviewSpeedToVideo(e.target, result.previewSpeed ?? DEFAULT_PREVIEW_SPEED);
+            });
+        }
+    }, true);
 
     // পপআপ থেকে সুইচ অন/অফ করলে রান করবে
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'local' && changes.isEnabled !== undefined) {
-            toggleZoomState();
+        if (areaName === 'local') {
+            if (changes.isEnabled !== undefined) {
+                toggleZoomState();
+            }
+
+            if (changes.previewSpeed !== undefined) {
+                applyPreviewSpeed();
+            }
+
+            if (changes.preferredQuality !== undefined) {
+                applyQualityPreference();
+            }
         }
     });
 

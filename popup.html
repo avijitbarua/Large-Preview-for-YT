@@ -86,11 +86,80 @@
             border-color: #dcdcdc;
         }
 
+        .setting-card.compact {
+            align-items: flex-start;
+            gap: 14px;
+        }
+
         .setting-info {
             display: flex;
             flex-direction: column;
             gap: 5px;
             max-width: 200px;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 44px;
+            flex-shrink: 0;
+        }
+
+        .setting-control.stack {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            min-width: 120px;
+            width: 140px;
+        }
+
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .range-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 38px;
+            text-align: right;
+        }
+
+        .setting-select,
+        .setting-range {
+            width: 100%;
+        }
+
+        .setting-select {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-family: inherit;
+            font-size: 12px;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .setting-select:focus,
+        .setting-range:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.12);
+        }
+
+        .setting-range {
+            accent-color: var(--primary);
+        }
+
+        .setting-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.35;
         }
 
         .setting-title {
@@ -218,10 +287,12 @@
                 <div class="setting-title">Enable Extension</div>
                 <div class="setting-desc">Activate cinematic large previews layout.</div>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="extensionToggle">
-                <span class="slider"></span>
-            </label>
+            <div class="setting-control">
+                <label class="switch">
+                    <input type="checkbox" id="extensionToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <!-- Force Audio Toggle -->
@@ -230,10 +301,46 @@
                 <div class="setting-title">Force Audio Auto-Play</div>
                 <div class="setting-desc">Automatically unmute preview videos on hover.</div>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="forceAudioToggle">
-                <span class="slider"></span>
-            </label>
+            <div class="setting-control">
+                <label class="switch">
+                    <input type="checkbox" id="forceAudioToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Preview Speed Control -->
+        <div class="setting-card compact">
+            <div class="setting-info">
+                <div class="setting-title">Preview Playback Speed</div>
+            </div>
+            <div class="setting-control stack">
+                <div class="range-row">
+                    <input type="range" id="previewSpeedRange" class="setting-range" min="0.5" max="2" step="0.1" value="1">
+                    <div class="range-value" id="previewSpeedValue">1.0x</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Preference -->
+        <div class="setting-card compact">
+            <div class="setting-info">
+                <div class="setting-title">Quality Preference</div>
+            </div>
+            <div class="setting-control stack">
+                <select id="qualitySelect" class="setting-select">
+                    <option value="auto">Auto</option>
+                    <option value="highres">High Res</option>
+                    <option value="hd2160">2160p</option>
+                    <option value="hd1440">1440p</option>
+                    <option value="hd1080">1080p</option>
+                    <option value="hd720">720p</option>
+                    <option value="large">480p</option>
+                    <option value="medium">360p</option>
+                    <option value="small">240p</option>
+                    <option value="tiny">144p</option>
+                </select>
+            </div>
         </div>
     </div>
 
